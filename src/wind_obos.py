@@ -30,10 +30,10 @@ class Enum(object):
 
 # Enumerated types from lib_wind_obos
 Substructure    = Enum('MONOPILE JACKET SPAR SEMISUBMERSIBLE')
-Anchor          = Enum('DRAGEMBEDMENT, SUCTIONPILE')
-TurbineInstall  = Enum('INDIVIDUAL, BUNNYEARS, ROTORASSEMBLED')
-TowerInstall    = Enum('ONEPIECE, TWOPIECE')
-InstallStrategy = Enum('PRIMARYVESSEL, FEEDERBARGE')
+Anchor          = Enum('DRAGEMBEDMENT SUCTIONPILE')
+TurbineInstall  = Enum('INDIVIDUAL BUNNYEARS ROTORASSEMBLED')
+TowerInstall    = Enum('ONEPIECE TWOPIECE')
+InstallStrategy = Enum('PRIMARYVESSEL FEEDERBARGE')
 
 
 # Set dynamic library name

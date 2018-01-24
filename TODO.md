@@ -1,0 +1,6 @@
+- Get ECN wrapper working or use Shoreline
+- Better ties between BOS and design models
+- Integrate with Fixed-Floating capability
+- Integrate with DELPHOS
+- Understand towing logic and make function of draft, not spar/semi switch
+- Make install and assembly times function of engineering?  size?

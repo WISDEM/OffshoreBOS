@@ -428,8 +428,12 @@ void wobos::map2variables() {
   addLocPerm = mapVars["addLocPerm"];
   metTowCR = mapVars["metTowCR"];
   decomDiscRate = mapVars["decomDiscRate"];
+
   
-  // OUTPUTS
+  // INPUTS OR OUTPUTS
+  // Inputs if running connected to other modules in WISDEM
+  // Outputs if running isolated
+  
   // Turbine outputs
   hubD = mapVars["hubD"];
   bladeL = mapVars["bladeL"];
@@ -443,7 +447,10 @@ void wobos::map2variables() {
   //Substructure & Foundation outputs
   subTotM = mapVars["subTotM"];
   subTotCost = mapVars["subTotCost"];
+  moorCost = mapVars["moorCost"];
   
+  // OUTPUTS
+
   //Electrical Infrastructure outputs
   systAngle = mapVars["systAngle"];
   freeCabLeng = mapVars["freeCabLeng"];
@@ -728,7 +735,10 @@ void wobos::variables2map() {
   mapVars["metTowCR"] = metTowCR;
   mapVars["decomDiscRate"] = decomDiscRate;
   
-  // OUTPUTS
+  // INPUTS or OUTPUTS
+  // Inputs if running connected to other modules in WISDEM
+  // Outputs if running isolated
+
   // Turbine outputs
   mapVars["hubD"] = hubD;
   mapVars["bladeL"] = bladeL;
@@ -742,7 +752,9 @@ void wobos::variables2map() {
   //Substructure & Foundation outputs
   mapVars["subTotM"] = subTotM;
   mapVars["subTotCost"] = subTotCost;
+  mapVars["moorCost"] = moorCost;
   
+  // OUTPUTS
   //Electrical Infrastructure outputs
   mapVars["systAngle"] = systAngle;
   mapVars["freeCabLeng"] = freeCabLeng;
@@ -1181,27 +1193,36 @@ void wobos::calculate_bos_cost() {
 //Offshore BOS model 'General' Module starts here and ends at TowerMass() function definition
 //*******************************************************************************************
 
-//calculate turbine hub Diameter
+// Calculate turbine parameters
+// NOTE: All these quantities can be inputs or outputs, depending on how the module is called
 void wobos::set_turbine_parameters() {
   // Hub diameter
-  hubD     = 0.25*turbR + 2; // meters
+  if (hubD <= 0.0) 
+    hubD = 0.25*turbR + 2; // meters
 
   // Blade length
-  bladeL   = 0.5 * (rotorD - hubD);
+  if (bladeL <= 0.0) 
+    bladeL = 0.5 * (rotorD - hubD);
   
   // Blade chord TODO: Chord = hubD?  Smells like a bug
-  chord    = 0.25*turbR + 2; // meters
+  if (chord <= 0.0) 
+    chord = 0.25*turbR + 2; // meters
 
   // Nacelle width and length
-  nacelleW = hubD + 1.5; // meters
-  nacelleL = 2 * nacelleW; // meters
+  if (nacelleW <= 0.0) 
+    nacelleW = hubD + 1.5; // meters
+  if (nacelleL <= 0.0) 
+    nacelleL = 2 * nacelleW; // meters
 
   // RNA mass
-  rnaM     = 2.082*pow(turbR, 2) + 44.59*turbR + 22.48; // kg
+  if (rnaM <= 0.0) 
+    rnaM = 2.082*pow(turbR, 2) + 44.59*turbR + 22.48; // kg
 
   // Tower diameter and mass
-  towerD   = 0.5*turbR + 4; // meters
-  towerM   = (0.4*M_PI*pow((rotorD / 2), 2)*hubH - 1500) / 1000; // kg
+  if (towerD <= 0.0) 
+    towerD = 0.5*turbR + 4; // meters
+  if (towerM <= 0.0) 
+    towerM   = (0.4*M_PI*pow((rotorD / 2), 2)*hubH - 1500) / 1000; // kg
 }
 
 //*******************************************************************************************
@@ -1332,88 +1353,97 @@ tuple<double, double> wobos::calculate_secondary_steel(int substructure) {
 tuple<double, double> wobos::calculate_secondary_steel() {return calculate_secondary_steel(substructure);}
 
 
-//calculate the mooring system and anchor cost in dollars for a singe floating substructure (spar or semisubmersible)
-double wobos::calculate_mooring() {
+// Calculate the mooring system and anchor cost in dollars for a singe floating substructure (spar or semisubmersible)
+// NOTE: This calculation may be provided as an input if run via WISDEM
+void wobos::calculate_mooring() {
   
-  // Check if mooring diameter was given as input.  If not, set standard sizes based on turbine rating
-  if (moorDia <= 0) {
-    double turbR_fit = -0.0004*pow(turbR, 2) + 0.0132*turbR + 0.0536;
-    if (turbR_fit <= 0.09) {
-      moorDia = 0.09;
-    } else if (turbR_fit <= 0.12) {
-      moorDia = 0.12;
-    } else {
-      moorDia = 0.15;
+  if (moorCost <= 0.0) {
+    
+    // Check if mooring diameter was given as input.  If not, set standard sizes based on turbine rating
+    if (moorDia <= 0.0) {
+      double turbR_fit = -0.0004*pow(turbR, 2) + 0.0132*turbR + 0.0536;
+      if (turbR_fit <= 0.09) {
+	moorDia = 0.09;
+      } else if (turbR_fit <= 0.12) {
+	moorDia = 0.12;
+      } else {
+	moorDia = 0.15;
+      }
     }
-  }
-  
-  // If moorling line cost is unset, select appropriate mooring line cost factor depending on the line diameter
-  if (moorCR <= 0) {
-    if (moorDia == 0.12) {
-      moorCR = 721;
-    } else if (moorDia == 0.15) {
-      moorCR = 1088;
-    } else {
-      moorCR = 399;
+    
+    // If moorling line cost is unset, select appropriate mooring line cost factor depending on the line diameter
+    if (moorCR <= 0.0) {
+      if (moorDia == 0.12) {
+	moorCR = 721.0;
+      } else if (moorDia == 0.15) {
+	moorCR = 1088.0;
+      } else {
+	moorCR = 399.0;
+      }
     }
+    
+    // Calculate mooring breaking load
+    double moorBL = 419449 * pow(moorDia, 2) + 93415 * moorDia - 3577.9;
+    
+    //calculate mooring line length and anchor cost depending on anchor type
+    double moorLeng, anchorCost;
+    switch (anchor) {
+    case DRAGEMBEDMENT:
+      moorLeng   = 0.0002*pow(waterD, 2.0) + 1.264*waterD + 47.776 + deaFixLeng;
+      anchorCost = moorBL / GRAVITY / 20.0 * 2000.0;
+      break;
+    case SUCTIONPILE:
+      moorLeng   = 0.0002*pow(waterD, 2) + 1.264*waterD + 47.776;
+      anchorCost = sqrt(moorBL / GRAVITY / 1250.0) * 150000.0;
+      break;
+    }
+  
+    // Finalize cost
+    moorCost = moorLines*(anchorCost + moorLeng*moorCR);
   }
-  
-  // Calculate mooring breaking load
-  double moorBL = 419449 * pow(moorDia, 2) + 93415 * moorDia - 3577.9;
-  
-  //calculate mooring line length and anchor cost depending on anchor type
-  double moorLeng, anchorCost;
-  switch (anchor) {
-  case DRAGEMBEDMENT:
-    moorLeng   = moorLines*((0.0002*pow(waterD, 2) + 1.264*waterD + 47.776) + deaFixLeng);
-    anchorCost = moorLines*(moorBL / 9.806 / 20 * 2000);
-    break;
-  case SUCTIONPILE:
-    moorLeng   = moorLines*(0.0002*pow(waterD, 2) + 1.264*waterD + 47.776);
-    anchorCost = moorLines*(sqrt(moorBL / 9.806 / 1250) * 150000);
-    break;
-  }
-  
-  // Finalize cost
-  return (anchorCost + moorLeng*moorCR);
 }
 
 
 void wobos::calculate_substructure_mass_cost() {
   // Calculate total substructure mass (tonnes) for a single substructure depending on substructure type
   // Calculate the total substructure cost for entire project in dollars
+  // NOTE: These quantities could be inputs if module is called within WISDEM
+  if ( (subTotM <= 0.0) || (subTotCost <= 0.0) ) {
+    switch (substructure) {
+      
+    case MONOPILE:
+      tie(subTotM, subTotCost) = calculate_monopile();
+      break;
+      
+    case JACKET:
+      tie(subTotM, subTotCost) = calculate_jacket();
+      break;
+      
+    case SPAR:
+      double ballM, ballCost;
+      tie(subTotM, subTotCost) = calculate_spar();
+      tie(ballM, ballCost)     = calculate_ballast();
+      subTotM    += ballM;
+      subTotCost += ballCost;
+      break;
+      
+    case SEMISUBMERSIBLE:
+      tie(subTotM, subTotCost) = calculate_semi();
+      break;
+    }
+    
+    // All substructures get secondary steel additions
+    double sSteelM, sSteelCost;
+    tie(sSteelM, sSteelCost) = calculate_secondary_steel();
+    subTotM    += sSteelM;
+    subTotCost += sSteelCost;
 
-  switch (substructure) {
-    
-  case MONOPILE:
-    tie(subTotM, subTotCost) = calculate_monopile();
-    break;
-    
-  case JACKET:
-    tie(subTotM, subTotCost) = calculate_jacket();
-    break;
-    
-  case SPAR:
-    double ballM, ballCost;
-    tie(subTotM, subTotCost) = calculate_spar();
-    tie(ballM, ballCost)     = calculate_ballast();
-    subTotM    += ballM;
-    subTotCost += ballCost + calculate_mooring();
-    break;
-
-  case SEMISUBMERSIBLE:
-    tie(subTotM, subTotCost) = calculate_semi();
-    subTotCost += calculate_mooring();
-    break;
+    // Floaters have mooring lines too
+    if (isFloating()) calculate_mooring();
+    subTotCost += moorCost;
   }
-
-  // All substructures get secondary steel additions
-  double sSteelM, sSteelCost;
-  tie(sSteelM, sSteelCost) = calculate_secondary_steel();
-  subTotM    += sSteelM;
-  subTotCost += sSteelCost;
   
-  // Make cost be for total plant, not per turbine
+  // Make cost be for total plant, not per turbine (need to do this even if using WISDEM)
   subTotCost *= nTurb;
 }
 
@@ -1616,7 +1646,7 @@ double wobos::calculate_substation_cost() {
     subsPileM = 0.0;
     // Use a semi substructure because a spar wouldn't be able to handle it
     tie(subsSubM, subsSubCost) = calculate_semi();
-    subsSubCost += calculate_mooring();
+    subsSubCost += moorCost;
     // All substructures get secondary steel additions
     double sSteelM, sSteelCost;
     tie(sSteelM, sSteelCost) = calculate_secondary_steel(SEMISUBMERSIBLE);
@@ -1713,7 +1743,7 @@ double wobos::TurbineInstall() {
   case BUNNYEARS:
     sum = vesselPosTurb + boltTower + boltNacelle2 + boltBlade2;
     break;
-  default:
+  case INDIVIDUAL:
     sum = vesselPosTurb + boltTower + boltNacelle1 + 3 * boltBlade1;
     break;
   }

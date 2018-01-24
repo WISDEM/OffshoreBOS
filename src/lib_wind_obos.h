@@ -69,6 +69,10 @@ enum  { ONEPIECE, TWOPIECE } ;
 //installation vessel strategy
 enum  { PRIMARYVESSEL, FEEDERBARGE } ;
 
+// Global constant
+double GRAVITY = 9.80633;
+
+
 class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND ALLOW MEMBER FUNCTIONS TO OPERATE ON THOSE VALUES
  public:
   //MAIN INPUTS************************************************************************************************************
@@ -330,6 +334,7 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   //Substructure & Foundation outputs
   double subTotM;
   double subTotCost;
+  double moorCost;
   
   //Electrical Infrastructure outputs
   double systAngle;
@@ -637,7 +642,8 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   {"metTowCR", 0.0},
     {"decomDiscRate", 0.0},
 
-    // OUTPUTS
+    
+    // INPUTS/OUTPUTS, depending on how module is called
   // Turbine outputs
   {"hubD", 0.0},
   {"bladeL", 0.0},
@@ -651,7 +657,10 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   //Substructure & Foundation outputs
   {"subTotM", 0.0},
   {"subTotCost", 0.0},
-  
+  {"moorCost", 0.0},
+
+    
+    // OUTPUTS
   //Electrical Infrastructure outputs
   {"systAngle", 0.0},
   {"freeCabLeng", 0.0},

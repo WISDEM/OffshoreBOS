@@ -32,7 +32,7 @@ INPUT, inspectClear, Inspection Clearance, m, 2.0
 INPUT, plantComm, Plant Commissioning Cost Factor, , 0.01
 INPUT, procurement_contingency, Procurement Contingency, , 0.05
 INPUT, install_contingency, Installation Contingency, , 0.30
-INPUT, construction_insurance, Insurance During Construction (% of ICC, , 0.01
+INPUT, construction_insurance, Insurance During Construction (% of ICC), , 0.01
 INPUT, capital_cost_year_0, Capital cost spent in year 0, , 0.20
 INPUT, capital_cost_year_1, Capital cost spent in year 1, , 0.60
 INPUT, capital_cost_year_2, Capital cost spent in year 2, , 0.10
@@ -212,19 +212,21 @@ INPUT, natHisPresAct, National Historic Preservation Act Compliance Cost, USD, 2
 INPUT, addLocPerm, Additional State and Local Permitting Cost, USD, 200000.0
 INPUT, metTowCR, Meteorological (Met Tower Fabrication & Install Cost, USD/MW, 11518.0
 INPUT, decomDiscRate, Decommissioning Cost Discount Rate, , 0.03
-#OUTPUTS, , , , 
-#General outputs, , , , 
-OUTPUT, hubD, Hub Diameter, m, 0.0
-OUTPUT, bladeL, Blade Length, m, 0.0
-OUTPUT, chord, Blade Max Chord, m, 0.0
-OUTPUT, nacelleW, Nacelle Width, m, 0.0
-OUTPUT, nacelleL, Nacelle Length, m, 0.0
-OUTPUT, rnaM, Rotor-Nacelle Assembly Mass, tonne, 0.0
-OUTPUT, towerD, Tower Diameter, m, 0.0
-OUTPUT, towerM, Tower Mass, tonne, 0.0
+#INPUTS/OUTPUTS: depending on how module is called
+#General, , , , 
+INPUT, hubD, Hub Diameter, m, 0.0
+INPUT, bladeL, Blade Length, m, 0.0
+INPUT, chord, Blade Max Chord, m, 0.0
+INPUT, nacelleW, Nacelle Width, m, 0.0
+INPUT, nacelleL, Nacelle Length, m, 0.0
+INPUT, rnaM, Rotor-Nacelle Assembly Mass, tonne, 0.0
+INPUT, towerD, Tower Diameter, m, 0.0
+INPUT, towerM, Tower Mass, tonne, 0.0
 #Substructure & Foundation outputs, , , , 
-OUTPUT, subTotM, Total Substructure Mass per Turbine, tonne, 0.0
-OUTPUT, subTotCost, Substructure & Foundation Total Cost, USD, 0.0
+INPUT, subTotM, Total Substructure Mass per Turbine, tonne, 0.0
+INPUT, subTotCost, Substructure & Foundation Total Cost, USD, 0.0
+INPUT, moorCost, Capital cost of mooring lines, anchors, USD, 0.0
+#OUTPUTS, , , , 
 #Electrical Infrastructure outputs, , , , 
 OUTPUT, systAngle, Floating System Angle, degrees, 0.0
 OUTPUT, freeCabLeng, Free Hanging Cable Length, m, 0.0
