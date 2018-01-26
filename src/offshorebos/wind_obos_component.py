@@ -17,10 +17,11 @@ class WindOBOS(Component):
 
         # Go through all variables from wobos text file of defaults and add as either inputs or outputs
         for k in xrange(len(wo.wobos_vars)):
+            passBy = not (type(wo.wobos_vars[k][-1]) == type(0.0))
             if wo.wobos_vars[k][0].upper() == 'INPUT':
-                self.add_param(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1])
+                self.add_param(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1], pass_by_obj=passBy)
             elif wo.wobos_vars[k][0].upper() == 'OUTPUT':
-                self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1])
+                self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1], pass_by_obj=passBy)
 
         
     def solve_nonlinear(self, params, unknowns, resids):
@@ -35,8 +36,8 @@ class WindOBOS(Component):
         '''
 
         # Store local variables in wobos structure
-        for k,v in params.iteritems():
-            self.mywobos.variable_access(k, v)
+        for k in params.keys():
+            self.mywobos.variable_access(k, params[k])
 
         # Run model
         self.mywobos.run()

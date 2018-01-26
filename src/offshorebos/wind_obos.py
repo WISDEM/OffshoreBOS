@@ -1,3 +1,5 @@
+from sys import platform
+import os
 from ctypes import *
 import csv
 
@@ -37,7 +39,6 @@ InstallStrategy = Enum('PRIMARYVESSEL FEEDERBARGE')
 
 
 # Set dynamic library name
-from sys import platform
 if platform == 'linux' or platform == 'linux2':
     flib = 'lib_wind_obos.so'
 elif platform == 'darwin':
@@ -45,11 +46,12 @@ elif platform == 'darwin':
 elif platform == 'win32':
     flib = 'lib_wind_obos.dll'
 
+libpath = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + flib
 
 # Actual wobos class
 class wobos(object):
     # Load the library as a static class variable
-    cpplib = cdll.LoadLibrary(flib)
+    cpplib = cdll.LoadLibrary(libpath)
 
     # Establish interface types
     cpplib.pywobos_new.argtypes = []
@@ -120,19 +122,25 @@ class wobos(object):
 
 
 # Variable defaults
-wobos_vars = list(csv.reader(open('wind_obos_defaults.csv')))
+fdefaults  = 'wind_obos_defaults.csv'
+fpath      = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + fdefaults
+wobos_vars = list(csv.reader(open(fpath)))
 poplist = []
 for k in xrange(len(wobos_vars)):
     # Flag comment lines, empty lines, or non-python relavant variables for removal
-    if wobos_vars[k][0][0] == '#' or wobos_vars[k][0].strip() in ['', 'arrayCables', 'exportCables']:
+    for n in xrange(len(wobos_vars[k])): wobos_vars[k][n] = wobos_vars[k][n].strip()
+    if wobos_vars[k][0][0] == '#' or wobos_vars[k][0] == '' or wobos_vars[k][1] in ['', 'arrayCables', 'exportCables']:
         poplist.append(k)
         continue
-    for n in xrange(len(wobos_vars[k])): wobos_vars[k][n] = wobos_vars[k][n].strip()
     # Convert to booleans first
     if wobos_vars[k][-1].upper() == 'TRUE':
         wobos_vars[k][-1] = True
     elif wobos_vars[k][-1].upper() == 'FALSE':
         wobos_vars[k][-1] = False
+        
+    elif wobos_vars[k][2].lower().find('number') >= 0:
+        # Convert to int on variables with "number" in the description
+        wobos_vars[k][-1] = int(wobos_vars[k][-1])
     else:
         try:
             # Convert to double
@@ -142,7 +150,6 @@ for k in xrange(len(wobos_vars)):
 # Remove unneeded entries (work backwards so index values are still relevant)
 poplist.reverse()
 for k in poplist: wobos_vars.pop(k)
-
 
 # Dynamically add accessors methods (Getter/Setter) to wobos class for every variable in defaults
 # For a reason I don't quite understand, this has to be done outside of wobos (not in the __init__)
