@@ -60,6 +60,7 @@
 #include <tuple>
 #include <map>
 #include <string>
+#include <algorithm>
 //#include <cstdlib>
 
 #ifndef M_PI
@@ -112,7 +113,7 @@ public:
       string myString = trim(cell);
       // For data field, use all caps
       if (m_data.size() >= 4)
-	transform(myString.begin(), myString.end(), myString.begin(), ::toupper);
+	std::transform(myString.begin(), myString.end(), myString.begin(), ::toupper);
 
       // Append to output vector
       m_data.push_back(myString);
@@ -1726,8 +1727,8 @@ double wobos::MinTurbDeckArea() {
   }
 
   double area2 = (towerInstallMethod == ONEPIECE) ?
-    area1 + pow((towerD + inspectClear), 2) :
-    area1 + pow((towerD + inspectClear), 2) * 2;
+    area1 + pow((towerD + inspectClear), 2.0) :
+    area1 + pow((towerD + inspectClear), 2.0) * 2.0;
 
   return area2;
 }

@@ -738,7 +738,7 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   tuple<double, double> calculate_semi();
   tuple<double, double> calculate_secondary_steel(int substructure);
   tuple<double, double> calculate_secondary_steel();
-  double calculate_mooring();
+  void calculate_mooring();
   void calculate_substructure_mass_cost();
 
   //Electrical Infrastructure Module
