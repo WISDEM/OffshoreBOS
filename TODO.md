@@ -4,3 +4,4 @@
 - Integrate with DELPHOS
 - Understand towing logic and make function of draft, not spar/semi switch
 - Make install and assembly times function of engineering?  size?
+- Design variables and constraints when used in optimization
