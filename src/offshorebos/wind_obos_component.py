@@ -23,7 +23,12 @@ class WindOBOS(Component):
             elif wo.wobos_vars[k][0].upper() == 'OUTPUT':
                 self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1], pass_by_obj=passBy)
 
-        
+        # Derivatives
+        self.deriv_options['type'] = 'fd'
+        self.deriv_options['form'] = 'central'
+        self.deriv_options['step_calc'] = 'relative'
+        self.deriv_options['step_size'] = 1e-5
+
     def solve_nonlinear(self, params, unknowns, resids):
         '''Sets mooring line properties then writes MAP input file and executes MAP.
         
