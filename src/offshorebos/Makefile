@@ -12,7 +12,7 @@ else
     ifeq ($(UNAME_S),Linux)
         ARCHFLAGS=-D LINUX
 	LIB := lib_wind_obos.so
-	LDFLAGS=-shared -W1,-soname,$(LIB)
+	LDFLAGS=-shared -Wl,-soname,$(LIB)
     endif
     ifeq ($(UNAME_S),Darwin)
         ARCHFLAGS=-D OSX

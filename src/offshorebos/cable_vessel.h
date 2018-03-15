@@ -2,6 +2,7 @@
 #define __cable_fam_h
 
 #include <vector>
+#include <cstddef>
 
 // Individual cable
 class cable {
