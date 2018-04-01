@@ -1,5 +1,5 @@
-#ifndef __cable_fam_h
-#define __cable_fam_h
+#ifndef __cable_vessel_h
+#define __cable_vessel_h
 
 #include <vector>
 #include <cstddef>

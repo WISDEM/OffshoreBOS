@@ -50,7 +50,8 @@
 #ifndef __wind_obos_h
 #define __wind_obos_h
 
-#include "cable_vessel.h"
+#include "lib_wind_obos_defaults.h"
+#include "lib_wind_obos_cable_vessel.h"
 #include <vector>
 #include <tuple>
 #include <map>
@@ -69,12 +70,12 @@ enum  { ONEPIECE, TWOPIECE } ;
 //installation vessel strategy
 enum  { PRIMARYVESSEL, FEEDERBARGE } ;
 
-// Global constant
-double GRAVITY = 9.80633;
-
 
 class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND ALLOW MEMBER FUNCTIONS TO OPERATE ON THOSE VALUES
  public:
+  // DEFAULTS FROM CSV FILE
+  wind_obos_defaults wobos_default;
+  
   //MAIN INPUTS************************************************************************************************************
   double turbCapEx; //turbine capital cost ($/kW)
   double nTurb;//number of turbines
@@ -400,6 +401,8 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   void set_vessel_defaults();
   void map2variables();
   void variables2map();
+  void set_map_variable(string keyStr, string valStr);
+  void set_map_variable(string keyStr, double val);
   void set_map_variable(const char* key, double val);
   double get_map_variable(const char* key);
   

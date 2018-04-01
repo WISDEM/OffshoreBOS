@@ -1,7 +1,9 @@
 CC=g++
 CCFLAGS=-g -std=c++11 -fPIC
 
-OBS  = lib_wind_obos.o cable_vessel.o 
+OLD_OBS  = lib_wind_obos_orig.o 
+NEW_OBS  = lib_wind_obos.o lib_wind_obos_cable_vessel.o lib_wind_obos_defaults.o
+TEST_OBS = test_wind_obos.o test_wind_obos_orig.o test_both.o
 
 ifeq ($(OS),Windows_NT)
     ARCHFLAGS=-D WIN64
@@ -28,10 +30,15 @@ all: shared
 %.o: %.c %.h
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-shared : $(OBS)
-	$(CC) $(LDFLAGS) -o $(LIB) $(OBS)
+shared : $(NEW_OBS)
+	$(CC) $(LDFLAGS) -o $(LIB) $(NEW_OBS)
+
+test: $(NEW_OBS) $(OLD_OBS) $(TEST_OBS) 
+	$(CC) $(CPPFLAGS) -o testBoth.exe $(NEW_OBS) $(OLD_OBS) test_both.o
+	$(CC) $(CPPFLAGS) -o testNew.exe $(NEW_OBS) test_wind_obos.o
+	$(CC) $(CPPFLAGS) -o testOrig.exe $(OLD_OBS) test_wind_obos_orig.o
 
 clean:
-	/bin/rm -rf $(OBS) $(LIB) *~ *.pyc
+	/bin/rm -rf $(NEW_OBS) $(OLD_OBS) $(TEST_OBS) *.exe $(LIB) *~ *.pyc *.dSYM
 
 .PHONY: clean

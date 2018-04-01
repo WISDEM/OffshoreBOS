@@ -17,11 +17,11 @@ class WindOBOS(Component):
 
         # Go through all variables from wobos text file of defaults and add as either inputs or outputs
         for k in xrange(len(wo.wobos_vars)):
-            passBy = not (type(wo.wobos_vars[k][-1]) == type(0.0))
+            passBy = not (type(wo.wobos_vars[k][-2]) == type(0.0))
             if wo.wobos_vars[k][0].upper() == 'INPUT':
-                self.add_param(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1], pass_by_obj=passBy)
+                self.add_param(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][3], val=wo.wobos_vars[k][-2], pass_by_obj=passBy)
             elif wo.wobos_vars[k][0].upper() == 'OUTPUT':
-                self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][-2], val=wo.wobos_vars[k][-1], pass_by_obj=passBy)
+                self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][3], val=wo.wobos_vars[k][-2], pass_by_obj=passBy)
 
         # Derivatives
         self.deriv_options['type'] = 'fd'

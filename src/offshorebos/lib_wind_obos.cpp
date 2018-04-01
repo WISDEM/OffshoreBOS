@@ -48,9 +48,7 @@
 *******************************************************************************************************/
 
 #include "lib_wind_obos.h"
-#include "cable_vessel.h"
 
-//#include <iterator>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -61,10 +59,13 @@
 #include <map>
 #include <string>
 #include <algorithm>
-//#include <cstdlib>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327
+#endif
+
+#ifndef GRAVITY
+#define GRAVITY 9.80633
 #endif
 
 using namespace std;
@@ -81,123 +82,33 @@ extern "C" {
 }
 
 
-// Helper for string parsing
-string trim(const string& str, const string& whitespace = "# \t") {
-    const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos) return ""; // no content
-    const auto strEnd   = str.find_last_not_of(whitespace);
-    const auto strRange = strEnd - strBegin + 1;
-    return str.substr(strBegin, strRange);
-}
-
-// Class to read csv file by row, parse into vector
-// https://stackoverflow.com/questions/1120140/how-can-i-read-and-parse-csv-files-in-c
-class CSVRow {
-public:
-  string const& operator[](size_t index) const {return m_data[index];}
-  size_t size() const {return m_data.size();}
-  
-  void readNextRow(istream& str) {
-    string line, cell;
-    getline(str, line);
-
-    // Truncate line after comment character
-    string::size_type n = line.find("#");
-    if (n != string::npos) line.erase(n);
-
-    stringstream lineStream(line);
-
-    m_data.clear();
-    while(getline(lineStream, cell, ',')) {
-      // Cleanup entry: remove leading and trailing spaces
-      string myString = trim(cell);
-      // For data field, use all caps
-      if (m_data.size() >= 4)
-	std::transform(myString.begin(), myString.end(), myString.begin(), ::toupper);
-
-      // Append to output vector
-      m_data.push_back(myString);
-    }
-
-    // This checks for a trailing comma with no data after it.
-    if (!lineStream && cell.empty()) m_data.push_back("");
-  }
-  
-private:
-  vector<string> m_data;
-};
-istream& operator>>(istream& str, CSVRow& data) {data.readNextRow(str); return str;}
-
-
-
 // Default constructor loads values from text file
 wobos::wobos() {
   // Set cable and vessel templates
   set_templates();
 
-  // File with variable defaults listed
-  ifstream infile("wind_obos_defaults.csv"); //.dat
+  // Load in defaults from csv-file and store locally for use in SAM and WISDEM
+  wobos_default = wind_obos_defaults();
 
-  // Read in row by row
-  CSVRow row;
-  while (infile >> row) {
-    // Check for empty or improper lines
-    if (row.size() != 5) continue;
+  // Store default variables locally
+  for (int i=0; i<wobos_default.variables.size(); i++) {
+    string keyStr = wobos_default.variables[i].name;
+    string valStr = wobos_default.variables[i].valueStr;
 
-    string keyStr = row[1];
-    string valStr = row[4];
-
-    // Do variables that are not simple doubles first- enums, bools, structures, etc
-    // Have to both set variable here and store in mapVars so it doesn't get overwritten later
-    if (keyStr == "substructure") {
-      substructure = str2substructure[valStr];
-      mapVars[keyStr] = (double)substructure;
-      set_vessel_defaults();
-      // TODO- if vessels are specified in the text file, this will have to be done before those are read
+    if ( (keyStr == "anchor") || (keyStr == "turbInstallMethod") || (keyStr == "substructure") ||
+	 (keyStr == "towerInstallMethod") || (keyStr == "installStrategy") ||
+	 (keyStr == "cableOptimizer") || (keyStr == "arrayCables") || (keyStr == "exportCables") ) {
+      set_map_variable(keyStr, valStr);
     }
-    else if (keyStr == "anchor") {
-      anchor = str2anchor[valStr];
-      mapVars[keyStr] = (double)anchor;
-    }
-    else if (keyStr == "turbInstallMethod") {
-      turbInstallMethod = str2turbInstallMethod[valStr];
-      mapVars[keyStr] = (double)turbInstallMethod;
-    }
-    else if (keyStr == "towerInstallMethod") {
-      towerInstallMethod = str2towerInstallMethod[valStr];
-      mapVars[keyStr] = (double)towerInstallMethod;
-    }
-    else if (keyStr == "installStrategy") {
-      installStrategy = str2installStrategy[valStr];
-      mapVars[keyStr] = (double)installStrategy;
-    }
-    else if (keyStr == "cableOptimizer") {
-      cableOptimizer = ((valStr=="FALSE") || (valStr=="0")) ? false : true;
-      mapVars[keyStr] = (cableOptimizer) ? 1.0 : 0.0;
-    }
-    else if ( (keyStr == "arrayCables") || (keyStr == "exportCables") ) {
-      vector<int> cableVoltages;
-      stringstream iss( valStr );
-      int temp;
-      while ( iss >> temp ) {
-	cableVoltages.push_back( temp );
-	if (iss.peek() == ' ') iss.ignore();
-      }
-      if (keyStr == "arrayCables") arrCables = set_cables(cableVoltages);
-      else expCables = set_cables(cableVoltages);
-    }
-    
-    else if (mapVars.find(keyStr) != mapVars.end()) {
-      double myval = stod(valStr);
-      // Percentage-fraction input check
-      if ( (myval > 1.0) && (variable_percentage.find(keyStr) != variable_percentage.end()) )
-	mapVars[keyStr] = 1e-2 * myval;
-      else
-	mapVars[keyStr] = myval;
-    }
-    
-    else 
+    else if (mapVars.find(keyStr) == mapVars.end()) {
       cout << "CANNOT FIND: " << keyStr << " = " << valStr << endl;
+    }
+    else if (wobos_default.variables[i].isDouble()) {
+      set_map_variable(keyStr, wobos_default.variables[i].value);
+    }
+    else {
+      cout << "CANNOT SET: " << keyStr << " = " << valStr << endl;
+    }
   }
 
   // Store all doubles from map to actual class variables
@@ -815,7 +726,52 @@ void wobos::variables2map() {
   mapVars["total_bos_cost"] = total_bos_cost;
 }
 
-void wobos::set_map_variable(const char* key, double val) {mapVars[string(key)] = val;}
+void wobos::set_map_variable(string keyStr, string valStr) {
+  if (keyStr == "substructure") {
+    substructure = str2substructure[valStr];
+    mapVars[keyStr] = (double)substructure;
+    set_vessel_defaults();
+    // TODO- if vessels are specified in the text file, this will have to be done before those are read
+  }
+  else if (keyStr == "anchor") {
+    anchor = str2anchor[valStr];
+    mapVars[keyStr] = (double)anchor;
+  }
+  else if (keyStr == "turbInstallMethod") {
+    turbInstallMethod = str2turbInstallMethod[valStr];
+    mapVars[keyStr] = (double)turbInstallMethod;
+  }
+  else if (keyStr == "towerInstallMethod") {
+    towerInstallMethod = str2towerInstallMethod[valStr];
+    mapVars[keyStr] = (double)towerInstallMethod;
+  }
+  else if (keyStr == "installStrategy") {
+    installStrategy = str2installStrategy[valStr];
+    mapVars[keyStr] = (double)installStrategy;
+  }
+  else if (keyStr == "cableOptimizer") {
+    cableOptimizer = ((valStr=="FALSE") || (valStr=="0")) ? false : true;
+    mapVars[keyStr] = (cableOptimizer) ? 1.0 : 0.0;
+  }
+  else if ( (keyStr == "arrayCables") || (keyStr == "exportCables") ) {
+    vector<int> cableVoltages;
+    stringstream iss( valStr );
+    int temp;
+    while ( iss >> temp ) {
+      cableVoltages.push_back( temp );
+      if (iss.peek() == ' ') iss.ignore();
+    }
+    if (keyStr == "arrayCables") arrCables = set_cables(cableVoltages);
+    else expCables = set_cables(cableVoltages);
+  }
+}
+void wobos::set_map_variable(string keyStr, double val) {
+  if ( (val > 1.0) && (variable_percentage.find(keyStr) != variable_percentage.end()) )
+	val *= 1e-2;
+
+  mapVars[keyStr] = val;
+}
+void wobos::set_map_variable(const char* key, double val) {set_map_variable(string(key), val);}
 double wobos::get_map_variable(const char* key) {return mapVars[string(key)];}
 
 
@@ -1099,7 +1055,7 @@ void wobos::set_vessel_defaults() {
 
   arrCabInstVessel = vesselTemplates["LARGE_ARRAY_CABLE_LAY"];
   expCabInstVessel = vesselTemplates["LARGE_EXPORT_CABLE_LAY"];
-  
+
   if (isFixed()) {
     turbInstVessel   = vesselTemplates["HIGH_HEIGHT_LARGE_SIZED_JACKUP"];
     subInstVessel    = vesselTemplates["HIGH_HEIGHT_LARGE_SIZED_JACKUP"];
@@ -1804,7 +1760,7 @@ void wobos::calculate_assembly_and_installation() {
   moorTime = (anchor == DRAGEMBEDMENT) ? 5.0 + waterD*moorTimeFac : 11.0 + waterD*moorTimeFac;
   moorTime = ceil((((moorLoadout + moorSurvey + moorTime)*moorLines + (waterD*moorTimeFac)*moorLines +
 		    (distPort * 1000 * 2 / (subInstVessel.transit_speed * 1852)))*nTurb / 24)*(1 / (1 - substructCont)));
-  
+
   // Calculate the total duration in days to prep floating substructures for turbine installation
   floatPrepTime = (substructure == SPAR) ?
     ceil(((((prepSpar + upendSpar) + (distPtoA / subInstVessel.tow_speed))*nTurb) / 24) + prepAA / 24) :

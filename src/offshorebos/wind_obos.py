@@ -133,18 +133,18 @@ for k in xrange(len(wobos_vars)):
         poplist.append(k)
         continue
     # Convert to booleans first
-    if wobos_vars[k][-1].upper() == 'TRUE':
-        wobos_vars[k][-1] = True
-    elif wobos_vars[k][-1].upper() == 'FALSE':
-        wobos_vars[k][-1] = False
+    if wobos_vars[k][-2].upper() == 'TRUE':
+        wobos_vars[k][-2] = True
+    elif wobos_vars[k][-2].upper() == 'FALSE':
+        wobos_vars[k][-2] = False
         
     elif wobos_vars[k][2].lower().find('number') >= 0:
         # Convert to int on variables with "number" in the description
-        wobos_vars[k][-1] = int(wobos_vars[k][-1])
+        wobos_vars[k][-2] = int(wobos_vars[k][-2])
     else:
         try:
             # Convert to double
-            wobos_vars[k][-1] = float(wobos_vars[k][-1])
+            wobos_vars[k][-2] = float(wobos_vars[k][-2])
         except ValueError:
             pass # Keep as string for enumerated types
 # Remove unneeded entries (work backwards so index values are still relevant)
