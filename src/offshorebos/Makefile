@@ -18,7 +18,7 @@ else
     endif
     ifeq ($(UNAME_S),Darwin)
         ARCHFLAGS=-D OSX
-	LIB := lib_wind_obos.dylib
+	LIB := lib_wind_obos.so
 	LDFLAGS=-dynamiclib
     endif
 endif

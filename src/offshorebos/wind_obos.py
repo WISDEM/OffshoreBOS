@@ -39,10 +39,8 @@ InstallStrategy = Enum('PRIMARYVESSEL FEEDERBARGE')
 
 
 # Set dynamic library name
-if platform == 'linux' or platform == 'linux2':
+if platform == 'linux' or platform == 'linux2' or platform == 'darwin':
     flib = 'lib_wind_obos.so'
-elif platform == 'darwin':
-    flib = 'lib_wind_obos.dylib'
 elif platform == 'win32':
     flib = 'lib_wind_obos.dll'
 
