@@ -897,15 +897,15 @@ void wobos::set_templates() {
   id22.operational_depth = 32.5;
   id22.leg_length = 50.4;
   id22.jackup_speed = 0.9;
-  id22.deck_space = 2000;
-  id22.payload = 1930;
+  id22.deck_space = 2000.0;
+  id22.payload = 1930.0;
   id22.lift_capacity = 510;
   id22.lift_height = 89.5;
-  id22.transit_speed = 4;
-  id22.max_wind_speed = 10;
-  id22.max_wave_height = 2;
-  id22.day_rate = 70000;
-  id22.mobilization_time = 3;
+  id22.transit_speed = 4.0;
+  id22.max_wind_speed = 10.0;
+  id22.max_wave_height = 2.0;
+  id22.day_rate = 70000.0;
+  id22.mobilization_time = 3.0;
   id22.number_of_vessels = 1;
   vesselTemplates.insert( make_pair("LARGE_JACKUP_BARGE", id22) );
     
@@ -1773,10 +1773,10 @@ void wobos::calculate_assembly_and_installation() {
   nTurbPerTrip = 1;
   if (isFixed()) {
     nTurbPerTrip = (installStrategy == PRIMARYVESSEL) ?
-      floor(min((turbInstVessel.deck_space / turbDeckArea), (turbInstVessel.payload / (rnaM + towerM)))) :
-      floor(min((turbFeederBarge.deck_space / turbDeckArea), (turbFeederBarge.payload / (rnaM + towerM))));
+      min((turbInstVessel.deck_space / turbDeckArea), (turbInstVessel.payload / (rnaM + towerM))) :
+      min((turbFeederBarge.deck_space / turbDeckArea), (turbFeederBarge.payload / (rnaM + towerM)));
   } else if (substructure == SPAR) {
-    nTurbPerTrip = floor(min((turbFeederBarge.deck_space / turbDeckArea), (turbFeederBarge.payload / (rnaM + towerM))));
+    nTurbPerTrip = min((turbFeederBarge.deck_space / turbDeckArea), (turbFeederBarge.payload / (rnaM + towerM)));
   }
 
   // Calculate the total duration in days required to install all turbines

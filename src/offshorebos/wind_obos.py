@@ -39,12 +39,17 @@ InstallStrategy = Enum('PRIMARYVESSEL FEEDERBARGE')
 
 
 # Set dynamic library name
-if platform == 'linux' or platform == 'linux2' or platform == 'darwin':
+if platform == "linux" or platform == "linux2":
     flib = 'lib_wind_obos.so'
-elif platform == 'win32':
+elif platform == "darwin":
+    flib = 'lib_wind_obos.so'
+elif platform == "win32":
+    #flib = 'lib_wind_obos.dll'
+    flib = 'lib_wind_obos.pyd'
+elif platform == "cygwin":
     flib = 'lib_wind_obos.dll'
 
-libpath = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + flib
+libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.path.sep + flib
 
 # Actual wobos class
 class wobos(object):

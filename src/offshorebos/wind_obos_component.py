@@ -45,7 +45,7 @@ class WindOBOS(Component):
         # Store local variables in wobos structure
         for k in params.keys():
             self.mywobos.variable_access(k, params[k])
-
+            
         # Run model
         self.mywobos.run()
 
