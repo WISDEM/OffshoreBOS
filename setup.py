@@ -3,8 +3,14 @@
 
 from setuptools import setup
 from numpy.distutils.core import setup, Extension
+import os, platform
 
 
+if platform.system() == 'Windows':
+    # Note: must use mingw compiler on windows or a Visual C++ compiler version that supports std=c++11
+    arglist = ['-std=gnu++11','-fPIC']
+else:
+    arglist = ['-std=c++11','-fPIC']
 
 setup(
     name='OffshoreBOS',
@@ -22,6 +28,6 @@ setup(
     ext_modules=[Extension('lib_wind_obos', ['src/offshorebos/lib_wind_obos.cpp',
                                              'src/offshorebos/lib_wind_obos_cable_vessel.cpp',
                                              'src/offshorebos/lib_wind_obos_defaults.cpp'],
-                           extra_compile_args=['-fPIC -std=c++11'])],
+                           extra_compile_args=arglist)],
     zip_safe=False
 )
