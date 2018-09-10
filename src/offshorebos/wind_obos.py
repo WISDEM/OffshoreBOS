@@ -2,6 +2,8 @@ from sys import platform
 import os
 from ctypes import *
 import csv
+from distutils.sysconfig import get_config_var
+import six
 
 # http://stackoverflow.com/a/505457 with GB modifications
 class Enum(object):
@@ -37,17 +39,20 @@ TurbineInstall  = Enum('INDIVIDUAL BUNNYEARS ROTORASSEMBLED')
 TowerInstall    = Enum('ONEPIECE TWOPIECE')
 InstallStrategy = Enum('PRIMARYVESSEL FEEDERBARGE')
 
-
-# Set dynamic library name
-if platform == "linux" or platform == "linux2":
-    flib = 'lib_wind_obos.so'
-elif platform == "darwin":
-    flib = 'lib_wind_obos.so'
-elif platform == "win32":
-    #flib = 'lib_wind_obos.dll'
-    flib = 'lib_wind_obos.pyd'
-elif platform == "cygwin":
-    flib = 'lib_wind_obos.dll'
+libext = get_config_var('EXT_SUFFIX')
+if libext is None or libext == '':
+    if platform == "linux" or platform == "linux2":
+        libext = '.so'
+    elif platform == "darwin":
+        #libext = '.dyld'
+        libext = '.so'
+    elif platform == "win32":
+        #libext = '.dll'
+        libext = '.pyd'
+    elif platform == "cygwin":
+        libext = '.dll'
+        
+flib = 'lib_wind_obos' + libext
 
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.path.sep + flib
 
@@ -100,9 +105,9 @@ class wobos(object):
     def variable_access(self, key, val=None):
         # Generic Getter if val is empty, Setter if val is given
         if val is None:
-            return wobos.cpplib.pywobos_get_map_variable(self.obj, key)
+            return wobos.cpplib.pywobos_get_map_variable(self.obj, six.b(key))
         else:
-            wobos.cpplib.pywobos_set_map_variable(self.obj, key, val)
+            wobos.cpplib.pywobos_set_map_variable(self.obj, six.b(key), val)
             return None
 
         
@@ -110,17 +115,17 @@ class wobos(object):
         # Generic Getter if val is empty, Setter if val is given
         assert isinstance(LocalEnum, Enum)
         if val is None:
-            return LocalEnum[int(wobos.cpplib.pywobos_get_map_variable(self.obj, key))]
+            return LocalEnum[int(wobos.cpplib.pywobos_get_map_variable(self.obj, six.b(key)))]
         else:
-            wobos.cpplib.pywobos_set_map_variable(self.obj, key, float(LocalEnum[val]))
+            wobos.cpplib.pywobos_set_map_variable(self.obj, six.b(key), float(LocalEnum[val]))
             return None
 
     def bool_access(self, key, val=None):
         if val is None:
-            return True if wobos.cpplib.pywobos_get_map_variable(self.obj, key)==1.0 else False
+            return True if wobos.cpplib.pywobos_get_map_variable(self.obj, six.b(key))==1.0 else False
         else:
             bval = 1.0 if val else 0.0
-            wobos.cpplib.pywobos_set_map_variable(self.obj, key, bval)
+            wobos.cpplib.pywobos_set_map_variable(self.obj, six.b(key), bval)
             return None
 
 
@@ -129,9 +134,9 @@ fdefaults  = 'wind_obos_defaults.csv'
 fpath      = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + fdefaults
 wobos_vars = list(csv.reader(open(fpath)))
 poplist = []
-for k in xrange(len(wobos_vars)):
+for k in range(len(wobos_vars)):
     # Flag comment lines, empty lines, or non-python relavant variables for removal
-    for n in xrange(len(wobos_vars[k])): wobos_vars[k][n] = wobos_vars[k][n].strip()
+    for n in range(len(wobos_vars[k])): wobos_vars[k][n] = wobos_vars[k][n].strip()
     if wobos_vars[k][0][0] == '#' or wobos_vars[k][0] == '' or wobos_vars[k][1] in ['', 'arrayCables', 'exportCables']:
         poplist.append(k)
         continue
@@ -175,5 +180,5 @@ def add_variable_fn(fn_name):
    
    setattr(wobos, fn_name, fn)
 
-for k in xrange(len(wobos_vars)):
+for k in range(len(wobos_vars)):
     add_variable_fn(wobos_vars[k][1])

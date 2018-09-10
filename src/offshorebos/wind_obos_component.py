@@ -1,6 +1,6 @@
 from openmdao.api import Component
 import numpy as np
-import wind_obos as wo
+from .wind_obos import wobos, wobos_vars
 
         
 class WindOBOS(Component):
@@ -13,17 +13,17 @@ class WindOBOS(Component):
         super(WindOBOS,self).__init__()
 
         # Internal python-wobos object
-        self.mywobos = wo.wobos()
+        self.mywobos = wobos()
 
         # Go through all variables from wobos text file of defaults and add as either inputs or outputs
-        for k in xrange(len(wo.wobos_vars)):
-            passBy = not (type(wo.wobos_vars[k][-2]) == type(0.0))
-            if wo.wobos_vars[k][1] in ['moorLines']:
+        for k in range(len(wobos_vars)):
+            passBy = not (type(wobos_vars[k][-2]) == type(0.0))
+            if wobos_vars[k][1] in ['moorLines']:
                 passBy = False
-            if wo.wobos_vars[k][0].upper() == 'INPUT':
-                self.add_param(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][3], val=wo.wobos_vars[k][-2], pass_by_obj=passBy)
-            elif wo.wobos_vars[k][0].upper() == 'OUTPUT':
-                self.add_output(wo.wobos_vars[k][1], desc=wo.wobos_vars[k][2], units=wo.wobos_vars[k][3], val=wo.wobos_vars[k][-2], pass_by_obj=passBy)
+            if wobos_vars[k][0].upper() == 'INPUT':
+                self.add_param(wobos_vars[k][1], desc=wobos_vars[k][2], units=wobos_vars[k][3], val=wobos_vars[k][-2], pass_by_obj=passBy)
+            elif wobos_vars[k][0].upper() == 'OUTPUT':
+                self.add_output(wobos_vars[k][1], desc=wobos_vars[k][2], units=wobos_vars[k][3], val=wobos_vars[k][-2], pass_by_obj=passBy)
 
         # Derivatives
         self.deriv_options['type'] = 'fd'
