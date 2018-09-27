@@ -325,7 +325,7 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   // Turbine outputs
   double hubD;
   double bladeL;
-  double chord;
+  double max_chord;
   double nacelleW;
   double nacelleL;
   double rnaM;
@@ -650,7 +650,7 @@ class wobos {//WIND OFFSHORE BOS STRUCTURE TO HOLD ALL INPUTS AND OUTPUTS AND AL
   // Turbine outputs
   {"hubD", 0.0},
   {"bladeL", 0.0},
-  {"chord", 0.0},
+  {"max_chord", 0.0},
   {"nacelleW", 0.0},
   {"nacelleL", 0.0},
   {"rnaM", 0.0},

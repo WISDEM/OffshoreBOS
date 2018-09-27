@@ -349,7 +349,7 @@ void wobos::map2variables() {
   // Turbine outputs
   hubD = mapVars["hubD"];
   bladeL = mapVars["bladeL"];
-  chord = mapVars["chord"];
+  max_chord = mapVars["max_chord"];
   nacelleW = mapVars["nacelleW"];
   nacelleL = mapVars["nacelleL"];
   rnaM = mapVars["rnaM"];
@@ -654,7 +654,7 @@ void wobos::variables2map() {
   // Turbine outputs
   mapVars["hubD"] = hubD;
   mapVars["bladeL"] = bladeL;
-  mapVars["chord"] = chord;
+  mapVars["max_chord"] = max_chord;
   mapVars["nacelleW"] = nacelleW;
   mapVars["nacelleL"] = nacelleL;
   mapVars["rnaM"] = rnaM;
@@ -1161,9 +1161,9 @@ void wobos::set_turbine_parameters() {
   if (bladeL <= 0.0) 
     bladeL = 0.5 * (rotorD - hubD);
   
-  // Blade chord TODO: Chord = hubD?  Smells like a bug
-  if (chord <= 0.0) 
-    chord = 0.25*turbR + 2; // meters
+  // Blade max_chord TODO: Chord = hubD?  Smells like a bug
+  if (max_chord <= 0.0) 
+    max_chord = 0.25*turbR + 2; // meters
 
   // Nacelle width and length
   if (nacelleW <= 0.0) 
@@ -1668,16 +1668,16 @@ double wobos::MinTurbDeckArea() {
   //check for turbine installation method
   switch (turbInstallMethod) {
   case ROTORASSEMBLED:
-    area1 = (bladeL + inspectClear)*(chord + inspectClear) + (M_PI*pow((hubD / 2), 2)) / 2
+    area1 = (bladeL + inspectClear)*(max_chord + inspectClear) + (M_PI*pow((hubD / 2), 2)) / 2
       + (nacelleL + inspectClear)*(nacelleW + inspectClear);
     break;
   case BUNNYEARS:
-    area1 = (bladeL + inspectClear)*(chord + inspectClear) + (nacelleL + inspectClear)
+    area1 = (bladeL + inspectClear)*(max_chord + inspectClear) + (nacelleL + inspectClear)
       *(nacelleW / 2 + bladeL / 2 * 1.73 + inspectClear);
     break;
   default:
   case INDIVIDUAL:
-    area1 = (bladeL + inspectClear)*(chord + inspectClear) + (nacelleL + inspectClear)
+    area1 = (bladeL + inspectClear)*(max_chord + inspectClear) + (nacelleL + inspectClear)
       *(nacelleW + inspectClear);
     break;
   }
